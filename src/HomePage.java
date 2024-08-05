@@ -1,12 +1,16 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HomePage extends JPanel {
 
     private JFrame frame;
+    private Map<String, CartItem> cartItems;
 
     public HomePage(JFrame frame) {
         this.frame = frame;
+        this.cartItems = new HashMap<>(); // Initialize the cartItems map
         setLayout(new BorderLayout());
 
         JLabel titleLabel = new JLabel("Shopping App", SwingConstants.CENTER);
@@ -31,7 +35,7 @@ public class HomePage extends JPanel {
         JPanel topRightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton cartButton = new JButton("Cart");
         cartButton.addActionListener(e -> {
-            frame.setContentPane(new CartPage(frame));
+            frame.setContentPane(new CartPage(frame, cartItems));
             frame.revalidate();
             frame.repaint();
         });
@@ -43,7 +47,23 @@ public class HomePage extends JPanel {
         JButton button = new JButton(category);
         button.setPreferredSize(new Dimension(100, 100));
         button.addActionListener(e -> {
-            frame.setContentPane(new CategoryPage(frame, category));
+            switch (category) {
+                case "Electronics":
+                    frame.setContentPane(new ElectronicsPage(frame, category, cartItems));
+                    break;
+                case "Stationery":
+                    frame.setContentPane(new StationeryPage(frame, category, cartItems));
+                    break;
+                case "Accessories":
+                    frame.setContentPane(new AccessoriesPage(frame, category, cartItems));
+                    break;
+                case "Sports":
+                    frame.setContentPane(new SportsPage(frame, category, cartItems));
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(frame, "Category not recognized.");
+                    return;
+            }
             frame.revalidate();
             frame.repaint();
         });
