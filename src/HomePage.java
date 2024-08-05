@@ -4,9 +4,11 @@ import java.awt.*;
 public class HomePage extends JPanel {
 
     private JFrame frame;
+    private Cart cart;
 
-    public HomePage(JFrame frame) {
+    public HomePage(JFrame frame, Cart cart) {
         this.frame = frame;
+        this.cart = cart; // Initialize Cart instance
         setLayout(new BorderLayout());
 
         JLabel titleLabel = new JLabel("Shopping App", SwingConstants.CENTER);
@@ -16,11 +18,13 @@ public class HomePage extends JPanel {
         JPanel categoriesPanel = new JPanel();
         categoriesPanel.setLayout(new GridLayout(2, 2, 20, 20));
 
+        // Create buttons for each category
         JButton electronicsButton = createCategoryButton("Electronics");
         JButton stationeryButton = createCategoryButton("Stationery");
         JButton accessoriesButton = createCategoryButton("Accessories");
         JButton sportsButton = createCategoryButton("Sports");
 
+        // Add buttons to the panel
         categoriesPanel.add(electronicsButton);
         categoriesPanel.add(stationeryButton);
         categoriesPanel.add(accessoriesButton);
@@ -31,7 +35,7 @@ public class HomePage extends JPanel {
         JPanel topRightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton cartButton = new JButton("Cart");
         cartButton.addActionListener(e -> {
-            frame.setContentPane(new CartPage(frame));
+            frame.setContentPane(new CartPage(frame, cart)); // Pass Cart instance
             frame.revalidate();
             frame.repaint();
         });
@@ -43,7 +47,8 @@ public class HomePage extends JPanel {
         JButton button = new JButton(category);
         button.setPreferredSize(new Dimension(100, 100));
         button.addActionListener(e -> {
-            frame.setContentPane(new CategoryPage(frame, category));
+            // Pass the Cart instance to CategoryPage
+            frame.setContentPane(new CategoryPage(frame, category, cart));
             frame.revalidate();
             frame.repaint();
         });

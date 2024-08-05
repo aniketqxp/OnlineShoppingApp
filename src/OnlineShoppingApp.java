@@ -1,14 +1,19 @@
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class OnlineShoppingApp {
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Online Shopping App");
+            // Create the main frame
+            JFrame frame = new JFrame("Shopping App");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(800, 600);
-            frame.setLocationRelativeTo(null);
-            frame.setContentPane(new HomePage(frame));
+            frame.setSize(600, 400);
+
+            // Create a Cart instance
+            Cart cart = new Cart();
+
+            // Initialize and set the HomePage as the initial content
+            frame.setContentPane(new HomePage(frame, cart));
             frame.setVisible(true);
         });
     }
