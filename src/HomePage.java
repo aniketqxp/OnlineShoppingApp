@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.border.LineBorder;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -11,38 +12,38 @@ public class HomePage extends JPanel {
 
     private JFrame frame;
     private Map<String, CartItem> cartItems;
+    
+    // Color for subtle grid lines
+    private static final Color GRID_LINE_COLOR = Color.decode("#003C4F");
 
     public HomePage(JFrame frame) {
         this.frame = frame;
         this.cartItems = new HashMap<>(); // Initialize the cartItems map
         setLayout(new BorderLayout());
+        
+        // Set the primary background color
+        setBackground(Color.decode("#021526"));
 
         // Panel for the title label, centered
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10)); // Add horizontal and vertical gaps
+        titlePanel.setBackground(Color.decode("#009FBD"));
         JLabel titleLabel = new JLabel("Untitled", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(Color.decode("#021526")); // Text color
+        //titleLabel.setBorder(new EmptyBorder(2, 120, 0, 0));
         titlePanel.add(titleLabel);
 
-        // Panel for the cart button, aligned to the right
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton cartButton = new JButton("Cart");
-        cartButton.addActionListener(e -> {
-            frame.setContentPane(new CartPage(frame, cartItems, this));
-            frame.revalidate();
-            frame.repaint();
-        });
-        buttonPanel.add(cartButton);
-
-        // Panel to combine both titlePanel and buttonPanel
+        // Panel to combine titlePanel (no buttonPanel now)
         JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(Color.decode("#021526")); // Background color for the top panel
         topPanel.add(titlePanel, BorderLayout.CENTER);
-        topPanel.add(buttonPanel, BorderLayout.EAST);
 
         // Add topPanel to the top of the main panel
         add(topPanel, BorderLayout.NORTH);
 
         // Categories panel using GridBagLayout
         JPanel categoriesPanel = new JPanel(new GridBagLayout());
+        categoriesPanel.setBackground(Color.decode("#021526")); // Background color for the categories panel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -63,26 +64,46 @@ public class HomePage extends JPanel {
     private void addCategoryItem(JPanel panel, GridBagConstraints gbc, String category, String imagePath, int gridX, int gridY) {
         gbc.gridx = gridX * 2;  // Button at even columns
         gbc.gridy = gridY * 2;
+        
+        // Create a panel for the category item with a border
+        JPanel itemPanel = new JPanel(new BorderLayout());
+        itemPanel.setBackground(Color.decode("#021526")); // Background color for the item panel
+        itemPanel.setBorder(new LineBorder(GRID_LINE_COLOR, 1)); // Set the border for grid lines
+        
         JButton button = createCategoryButton(category, imagePath);
-        panel.add(button, gbc);
+        itemPanel.add(button, BorderLayout.CENTER);
+
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        panel.add(itemPanel, gbc);
 
         gbc.gridx = gridX * 2;  // Label at even columns
         gbc.gridy = gridY * 2 + 1;
         JLabel label = new JLabel(category, SwingConstants.CENTER);
+        label.setForeground(Color.decode("#F9E2AF")); // Text color
+
         panel.add(label, gbc);
     }
 
     private JButton createCategoryButton(String category, String imagePath) {
         ImageIcon icon = createResizedImageIcon(imagePath, 150, 150); // Resize the image to fit the button
-        JButton button = new JButton(icon);
-        button.setPreferredSize(new Dimension(150, 150));
+        JButton button = new JButton(); // Create an empty button
+
+        // Set up a panel to hold the category image
+        JPanel iconPanel = new JPanel(new BorderLayout());
+        iconPanel.setOpaque(false); // Make the panel transparent
+        JLabel iconLabel = new JLabel(icon);
+        iconPanel.add(iconLabel, BorderLayout.CENTER);
+        button.add(iconPanel);
 
         // Customize button appearance
+        button.setPreferredSize(new Dimension(150, 150)); // Set the preferred size
+        button.setContentAreaFilled(false); // Remove default background
         button.setBorderPainted(false); // Remove border
-        button.setContentAreaFilled(false); // Remove background color
         button.setFocusPainted(false); // Remove focus border
         button.setOpaque(false); // Make button opaque (remove button color)
 
+        // Add action listener to handle button clicks
         button.addActionListener(e -> {
             switch (category) {
                 case "Electronics":
@@ -104,6 +125,7 @@ public class HomePage extends JPanel {
             frame.revalidate();
             frame.repaint();
         });
+
         return button;
     }
 
