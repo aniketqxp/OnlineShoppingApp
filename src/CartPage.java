@@ -6,10 +6,12 @@ public class CartPage extends JPanel {
 
     private JFrame frame;
     private Map<String, CartItem> cartItems;
+    private JPanel previousPage; // Reference to the previous page
 
-    public CartPage(JFrame frame, Map<String, CartItem> cartItems) {
+    public CartPage(JFrame frame, Map<String, CartItem> cartItems, JPanel previousPage) {
         this.frame = frame;
         this.cartItems = cartItems;
+        this.previousPage = previousPage; // Store the previous page reference
         setLayout(new BorderLayout());
 
         JLabel cartLabel = new JLabel("Cart", SwingConstants.CENTER);
@@ -19,10 +21,53 @@ public class CartPage extends JPanel {
         // Display cart items
         JPanel itemsPanel = new JPanel();
         itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS));
+        updateCartDisplay(itemsPanel);
+
+        JScrollPane scrollPane = new JScrollPane(itemsPanel);
+        add(scrollPane, BorderLayout.CENTER);
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        // Clear Cart Button
+        JButton clearCartButton = new JButton("Clear Cart");
+        clearCartButton.addActionListener(e -> {
+            cartItems.clear(); // Clear cart items
+            updateCartDisplay(itemsPanel); // Refresh display
+        });
+        bottomPanel.add(clearCartButton);
+
+        // Total Price Label
+        JLabel totalPriceLabel = new JLabel("Total Price: $" + calculateTotalPrice());
+        bottomPanel.add(totalPriceLabel);
+
+        // Proceed to Pay Button
+        JButton proceedButton = new JButton("Proceed to Pay");
+        proceedButton.addActionListener(e -> {
+            // Proceed to payment logic here
+            JOptionPane.showMessageDialog(frame, "Proceed to payment.");
+        });
+        bottomPanel.add(proceedButton);
+
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(e -> {
+            frame.setContentPane(previousPage); // Go back to the previous page
+            frame.revalidate();
+            frame.repaint();
+        });
+        topPanel.add(backButton, BorderLayout.WEST);
+
+        add(topPanel, BorderLayout.NORTH);
+    }
+
+    private void updateCartDisplay(JPanel itemsPanel) {
+        itemsPanel.removeAll(); // Clear existing items
 
         if (cartItems.isEmpty()) {
-            JLabel placeholderLabel = new JLabel("Cart is empty.");
-            itemsPanel.add(placeholderLabel);
+            JLabel emptyCartLabel = new JLabel("Your cart is empty.");
+            itemsPanel.add(emptyCartLabel);
         } else {
             for (CartItem cartItem : cartItems.values()) {
                 JLabel itemLabel = new JLabel(cartItem.getItemName() + " - $" + cartItem.getPrice() + " x " + cartItem.getQuantity());
@@ -30,18 +75,15 @@ public class CartPage extends JPanel {
             }
         }
 
-        add(itemsPanel, BorderLayout.CENTER);
+        itemsPanel.revalidate(); // Refresh the panel
+        itemsPanel.repaint();
+    }
 
-        JPanel topPanel = new JPanel(new BorderLayout());
-        JButton backButton = new JButton("Back");
-        backButton.addActionListener(e -> {
-            // Navigate to a specific page, or use a HomePage or appropriate page
-            frame.setContentPane(new HomePage(frame)); // Use HomePage to go back
-            frame.revalidate();
-            frame.repaint();
-        });
-        topPanel.add(backButton, BorderLayout.WEST);
-
-        add(topPanel, BorderLayout.NORTH);
+    private double calculateTotalPrice() {
+        double total = 0.0;
+        for (CartItem cartItem : cartItems.values()) {
+            total += cartItem.getPrice() * cartItem.getQuantity();
+        }
+        return total;
     }
 }

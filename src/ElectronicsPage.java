@@ -4,6 +4,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
+import javax.imageio.ImageIO;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,14 +28,16 @@ public class ElectronicsPage extends JPanel {
         add(categoryLabel, BorderLayout.NORTH);
 
         JPanel itemsPanel = new JPanel();
-        itemsPanel.setLayout(new GridLayout(2, 3, 20, 20));
+        itemsPanel.setLayout(new GridLayout(2, 3, 20, 20)); // 2 rows, 3 columns grid
 
-        // Define the items and their prices
+        // Define the items and their images
         String[] electronicsItems = {"Phone", "Tablet", "Laptop", "Camera", "TV", "Gaming Console"};
         int[] electronicsPrices = {300, 200, 1000, 500, 800, 400}; // Sample prices for the items
+        String[] imagePaths = {"images/phone.png", "images/tablet.png", "images/laptop.png", 
+                                "images/camera.png", "images/tv.png", "images/console.png"};
 
         for (int i = 0; i < electronicsItems.length; i++) {
-            JPanel itemPanel = createItemPanel(electronicsItems[i], electronicsPrices[i]);
+            JPanel itemPanel = createItemPanel(electronicsItems[i], electronicsPrices[i], imagePaths[i]);
             itemsPanel.add(itemPanel);
         }
 
@@ -48,7 +54,7 @@ public class ElectronicsPage extends JPanel {
 
         JButton cartButton = new JButton("Cart");
         cartButton.addActionListener(e -> {
-            frame.setContentPane(new CartPage(frame, cartItems));
+            frame.setContentPane(new CartPage(frame, cartItems, this));
             frame.revalidate();
             frame.repaint();
         });
@@ -57,21 +63,44 @@ public class ElectronicsPage extends JPanel {
         add(topPanel, BorderLayout.NORTH);
     }
 
-    private JPanel createItemPanel(String item, int price) {
+    private JPanel createItemPanel(String item, int price, String imagePath) {
         JPanel itemPanel = new JPanel();
-        itemPanel.setLayout(new BorderLayout());
+        itemPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+        // Set up the constraints for the image
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(10, 10, 5, 10); // Padding
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        
+        // Load image for the item
+        ImageIcon itemImage = createResizedImageIcon(imagePath, 100, 100);
+        JLabel itemImageLabel = new JLabel(itemImage);
+        itemPanel.add(itemImageLabel, gbc);
 
-        String buttonText = String.format("<html><center>%s<br><span style='font-size:12px;'>$%d</span></center></html>", item, price);
-        JButton itemButton = new JButton(buttonText);
-        itemButton.setPreferredSize(new Dimension(100, 100));
-        itemPanel.add(itemButton, BorderLayout.CENTER);
+        // Set up the constraints for the item name
+        gbc.gridy = 1;
+        gbc.insets = new Insets(5, 10, 5, 10); // Padding
+        JLabel nameLabel = new JLabel(item, SwingConstants.CENTER);
+        nameLabel.setFont(new Font("Arial", Font.PLAIN, 14)); // Smaller font for name
+        itemPanel.add(nameLabel, gbc);
 
+        // Set up the constraints for the item price
+        gbc.gridy = 2;
+        JLabel priceLabel = new JLabel("$" + price, SwingConstants.CENTER);
+        priceLabel.setFont(new Font("Arial", Font.BOLD, 16)); // Larger font for price
+        itemPanel.add(priceLabel, gbc);
+
+        // Panel for quantity controls and add to cart button
         JPanel controlPanel = new JPanel();
-        controlPanel.setLayout(new FlowLayout());
+        controlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5)); // Center align with padding
 
-        JButton plusButton = new JButton("+");
+        JButton minusButton = new JButton("-");
         JTextField quantityField = new JTextField("0", 2);
         quantityField.setHorizontalAlignment(JTextField.CENTER);
+        quantityField.setPreferredSize(new Dimension(40, 20)); // Set preferred size to avoid scaling issues
 
         quantityField.addFocusListener(new FocusAdapter() {
             @Override
@@ -89,7 +118,7 @@ public class ElectronicsPage extends JPanel {
             }
         });
 
-        JButton minusButton = new JButton("-");
+        JButton plusButton = new JButton("+");
         JButton addToCartButton = new JButton("Add to cart");
 
         plusButton.addActionListener(new ActionListener() {
@@ -128,14 +157,45 @@ public class ElectronicsPage extends JPanel {
             }
         });
 
-        controlPanel.add(plusButton);
-        controlPanel.add(quantityField);
+        // Add buttons to the control panel
         controlPanel.add(minusButton);
+        controlPanel.add(quantityField);
+        controlPanel.add(plusButton);
         controlPanel.add(addToCartButton);
 
-        itemPanel.add(controlPanel, BorderLayout.SOUTH);
+        // Set up the constraints for the control panel
+        gbc.gridy = 3;
+        gbc.insets = new Insets(10, 10, 10, 10); // Padding
+        itemPanel.add(controlPanel, gbc);
 
         return itemPanel;
+    }
+
+
+    private ImageIcon createResizedImageIcon(String path, int width, int height) {
+        BufferedImage bufferedImage = loadImage(path);
+        if (bufferedImage != null) {
+            Image resizedImage = bufferedImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(resizedImage);
+        } else {
+            return null;
+        }
+    }
+
+    private BufferedImage loadImage(String path) {
+        try {
+            URL imgURL = getClass().getResource("/" + path); // Ensure leading slash
+            if (imgURL != null) {
+                return ImageIO.read(imgURL);
+            } else {
+                System.err.println("Couldn't find file: " + path);
+                return null;
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading image: " + path);
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private void showAlert(String message) {
