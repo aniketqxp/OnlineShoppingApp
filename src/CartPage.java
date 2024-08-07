@@ -14,8 +14,13 @@ public class CartPage extends JPanel {
     private Map<String, CartItem> cartItems;
     private JPanel previousPage;
 
-    // Color for subtle grid lines
-    private static final Color GRID_LINE_COLOR = Color.decode("#003C4F");
+    // Color constants
+    private static final Color PRIMARY_BACKGROUND_COLOR = Color.decode("#FFFDED");
+    private static final Color TITLE_TEXT_COLOR = Color.decode("#4F4789");
+    private static final Color GRID_LINE_COLOR = Color.decode("#1F2833");
+    private static final Color BUTTON_BACKGROUND_COLOR = Color.decode("#201335");
+    private static final Color BUTTON_TEXT_COLOR = Color.decode("#FFFDED");
+    private static final Color HOVER_BORDER_COLOR = Color.decode("#FFAC33");
 
     // Map to hold image paths for items
     private static final Map<String, String> itemImagePaths = new HashMap<>();
@@ -47,7 +52,7 @@ public class CartPage extends JPanel {
         itemImagePaths.put("Baseball", "images/ball.png");
         itemImagePaths.put("Cricket Bat", "images/cricket-bat.png");
         itemImagePaths.put("Tennis Racket", "images/tennis-racket.png");
-        itemImagePaths.put("Badminton Racket", "images/badminton-racket.png");
+        itemImagePaths.put("Badminton Racket", "images/badminton.png");
     }
 
     public CartPage(JFrame frame, Map<String, CartItem> cartItems, JPanel previousPage) {
@@ -57,46 +62,41 @@ public class CartPage extends JPanel {
         setLayout(new BorderLayout());
 
         // Set the primary background color
-        setBackground(Color.decode("#021526"));
+        setBackground(PRIMARY_BACKGROUND_COLOR);
 
         // Title label
         JLabel cartLabel = new JLabel("Cart", SwingConstants.CENTER);
         cartLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        cartLabel.setForeground(Color.decode("#F9E2AF"));
+        cartLabel.setForeground(TITLE_TEXT_COLOR);
         add(cartLabel, BorderLayout.NORTH);
 
         // Display cart items
         JPanel itemsPanel = new JPanel();
-        itemsPanel.setBackground(Color.decode("#021526")); // Background color for items panel
+        itemsPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for items panel
         itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS));
         updateCartDisplay(itemsPanel);
 
         JScrollPane scrollPane = new JScrollPane(itemsPanel);
         add(scrollPane, BorderLayout.CENTER);
 
+        // Bottom panel for clear cart and checkout buttons
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottomPanel.setBackground(Color.decode("#021526")); // Background color for bottom panel
-
-        // Total Price Label
-        JLabel totalPriceLabel = new JLabel("Total Price: $" + calculateTotalPrice());
-        totalPriceLabel.setForeground(Color.decode("#F9E2AF")); // Text color
-        bottomPanel.add(totalPriceLabel);
+        bottomPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for bottom panel
 
         // Clear Cart Button
         JButton clearCartButton = new JButton("Clear Cart");
-        clearCartButton.setBackground(Color.decode("#009FBD")); // Button background color
-        clearCartButton.setForeground(Color.decode("#021526")); // Button text color
+        clearCartButton.setBackground(BUTTON_BACKGROUND_COLOR); // Button background color
+        clearCartButton.setForeground(BUTTON_TEXT_COLOR); // Button text color
         clearCartButton.addActionListener(e -> {
             cartItems.clear();
             updateCartDisplay(itemsPanel);
-            totalPriceLabel.setText("Total Price: $0.0");
         });
         bottomPanel.add(clearCartButton);
 
-        // Proceed to Pay Button
-        JButton proceedButton = new JButton("Proceed to Pay");
-        proceedButton.setBackground(Color.decode("#009FBD")); // Button background color
-        proceedButton.setForeground(Color.decode("#021526")); // Button text color
+        // Checkout Button
+        JButton proceedButton = new JButton("Checkout");
+        proceedButton.setBackground(BUTTON_BACKGROUND_COLOR); // Button background color
+        proceedButton.setForeground(BUTTON_TEXT_COLOR); // Button text color
         proceedButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(frame, "Proceed to payment.");
         });
@@ -105,8 +105,8 @@ public class CartPage extends JPanel {
         add(bottomPanel, BorderLayout.SOUTH);
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Color.decode("#009FBD")); // Background color for top panel
-        
+        topPanel.setBackground(BUTTON_BACKGROUND_COLOR); // Background color for top panel
+
         JButton backButton = createBackButton(previousPage);
         topPanel.add(backButton, BorderLayout.WEST);
 
@@ -119,12 +119,12 @@ public class CartPage extends JPanel {
         if (cartItems.isEmpty()) {
             // Create a panel for empty cart content
             JPanel emptyPanel = new JPanel(new GridBagLayout());
-            emptyPanel.setBackground(Color.decode("#021526")); // Background color for the empty panel
+            emptyPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for the empty panel
 
             // Create a sub-panel to hold the image and text
             JPanel contentPanel = new JPanel();
             contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-            contentPanel.setBackground(Color.decode("#021526")); // Match the background color
+            contentPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Match the background color
 
             // Add the image
             ImageIcon binIcon = createResizedImageIcon("images/empty.png", 100, 100); // Adjust size as needed
@@ -137,7 +137,7 @@ public class CartPage extends JPanel {
 
             // Add the text
             JLabel emptyCartLabel = new JLabel("Your cart is empty.");
-            emptyCartLabel.setForeground(Color.decode("#F9E2AF")); // Text color
+            emptyCartLabel.setForeground(TITLE_TEXT_COLOR); // Text color
             emptyCartLabel.setFont(new Font("Arial", Font.BOLD, 16));
             emptyCartLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             contentPanel.add(emptyCartLabel);
@@ -150,7 +150,7 @@ public class CartPage extends JPanel {
         } else {
             for (CartItem cartItem : cartItems.values()) {
                 JPanel itemPanel = new JPanel(new GridBagLayout());
-                itemPanel.setBackground(Color.decode("#021526")); // Background color for item panel
+                itemPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for item panel
                 itemPanel.setBorder(new LineBorder(GRID_LINE_COLOR, 1)); // Border for grid lines
                 GridBagConstraints gbc = new GridBagConstraints();
 
@@ -169,18 +169,18 @@ public class CartPage extends JPanel {
 
                 // Box B: Details
                 JPanel boxB = new JPanel();
-                boxB.setBackground(Color.decode("#021526")); // Background color for details box
+                boxB.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for details box
                 boxB.setLayout(new BoxLayout(boxB, BoxLayout.Y_AXIS)); // Stack details vertically
 
                 JLabel itemNameLabel = new JLabel("<html><div style='width:100px;'>" + cartItem.getItemName() + "</div></html>");
                 itemNameLabel.setFont(new Font("Arial", Font.BOLD, 16));
-                itemNameLabel.setForeground(Color.decode("#F9E2AF")); // Text color
+                itemNameLabel.setForeground(TITLE_TEXT_COLOR); // Text color
                 JLabel itemPriceLabel = new JLabel("Price: $" + cartItem.getPrice());
                 itemPriceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-                itemPriceLabel.setForeground(Color.decode("#F9E2AF")); // Text color
+                itemPriceLabel.setForeground(TITLE_TEXT_COLOR); // Text color
                 JLabel itemQtyLabel = new JLabel("Qty.: " + cartItem.getQuantity());
                 itemQtyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-                itemQtyLabel.setForeground(Color.decode("#F9E2AF")); // Text color
+                itemQtyLabel.setForeground(TITLE_TEXT_COLOR); // Text color
                 boxB.add(itemNameLabel);
                 boxB.add(itemPriceLabel);
                 boxB.add(itemQtyLabel);
@@ -191,24 +191,59 @@ public class CartPage extends JPanel {
                 itemPanel.add(boxB, gbc);
 
                 // Box C: Total Price
-                JLabel totalPriceLabel = new JLabel("$" + (cartItem.getPrice() * cartItem.getQuantity()));
-                totalPriceLabel.setFont(new Font("Arial", Font.BOLD, 16));
-                totalPriceLabel.setForeground(Color.decode("#F9E2AF")); // Text color
-                totalPriceLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+                JLabel itemTotalPriceLabel = new JLabel("$" + (cartItem.getPrice() * cartItem.getQuantity()));
+                itemTotalPriceLabel.setFont(new Font("Arial", Font.BOLD, 24));
+                itemTotalPriceLabel.setForeground(TITLE_TEXT_COLOR); // Text color
+                itemTotalPriceLabel.setHorizontalAlignment(SwingConstants.RIGHT);
                 gbc.gridx = 2;
                 gbc.gridy = 0;
-                gbc.gridheight = 1;
+                gbc.gridheight = 2; // Span 2 rows
+                gbc.insets = new Insets(5, 5, 5, 5);
                 gbc.anchor = GridBagConstraints.EAST;
-                itemPanel.add(totalPriceLabel, gbc);
+                itemPanel.add(itemTotalPriceLabel, gbc);
 
                 itemsPanel.add(itemPanel);
             }
+
+            // Display total price
+            double totalPrice = cartItems.values().stream().mapToDouble(item -> item.getPrice() * item.getQuantity()).sum();
+            JLabel totalPriceLabel = new JLabel("Total: $" + totalPrice);
+            totalPriceLabel.setFont(new Font("Arial", Font.BOLD, 28));
+            totalPriceLabel.setForeground(TITLE_TEXT_COLOR); // Text color
+            totalPriceLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+            // Add total price label with GridBagConstraints
+            JPanel totalPanel = new JPanel(new GridBagLayout());
+            totalPanel.setBackground(PRIMARY_BACKGROUND_COLOR);
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.insets = new Insets(10, 0, 10, 0);
+            gbc.anchor = GridBagConstraints.CENTER;
+
+            totalPanel.add(totalPriceLabel, gbc);
+            itemsPanel.add(totalPanel);
         }
 
         itemsPanel.revalidate();
         itemsPanel.repaint();
     }
-    
+
+    private ImageIcon createResizedImageIcon(String path, int width, int height) {
+        try {
+            URL imageUrl = getClass().getResource(path);
+            if (imageUrl == null) {
+                throw new IOException("Image not found: " + path);
+            }
+            BufferedImage originalImage = ImageIO.read(imageUrl);
+            Image resizedImage = originalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(resizedImage);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private JButton createBackButton(JPanel p) {
         // Create a panel to hold the back image
         JPanel backPanel = new JPanel();
@@ -255,38 +290,5 @@ public class CartPage extends JPanel {
         });
 
         return backButton;
-    }
-
-    private ImageIcon createResizedImageIcon(String path, int width, int height) {
-        BufferedImage bufferedImage = loadImage(path);
-        if (bufferedImage != null) {
-            Image resizedImage = bufferedImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-            return new ImageIcon(resizedImage);
-        } else {
-            return new ImageIcon("images/default.png");
-        }
-    }
-
-    private BufferedImage loadImage(String path) {
-        try {
-            URL imgURL = getClass().getResource("/" + path);
-            if (imgURL != null) {
-                return ImageIO.read(imgURL);
-            } else {
-                System.err.println("Couldn't find file: " + path);
-                return null;
-            }
-        } catch (IOException e) {
-            System.err.println("Error reading image file: " + path);
-            return null;
-        }
-    }
-
-    private double calculateTotalPrice() {
-        double totalPrice = 0.0;
-        for (CartItem cartItem : cartItems.values()) {
-            totalPrice += cartItem.getPrice() * cartItem.getQuantity();
-        }
-        return totalPrice;
     }
 }

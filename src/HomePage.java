@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import javax.swing.border.LineBorder;
 import java.awt.image.BufferedImage;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
 import javax.imageio.ImageIO;
@@ -12,30 +15,39 @@ public class HomePage extends JPanel {
 
     private JFrame frame;
     private Map<String, CartItem> cartItems;
-    
-    // Color for subtle grid lines
-    private static final Color GRID_LINE_COLOR = Color.decode("#003C4F");
+    private Font categoryFont;
+
+    // Define color constants
+    private static final Color PRIMARY_BACKGROUND_COLOR = Color.decode("#FFFDED");
+    private static final Color TITLE_BACKGROUND_COLOR = Color.decode("#201335");
+    private static final Color TITLE_TEXT_COLOR = Color.decode("#FCE762");
+    private static final Color CATEGORY_TEXT_COLOR = Color.decode("#4F4789");
+    private static final Color GRID_LINE_COLOR = Color.decode("#1F2833");
 
     public HomePage(JFrame frame) {
         this.frame = frame;
         this.cartItems = new HashMap<>(); // Initialize the cartItems map
         setLayout(new BorderLayout());
-        
+
         // Set the primary background color
-        setBackground(Color.decode("#021526"));
+        setBackground(PRIMARY_BACKGROUND_COLOR);
+        
+        // Load the custom font
+        Font titleFont = loadCustomFont("fonts/Original Fish.otf", 34f); // Adjust size as needed
+        
+        categoryFont = loadCustomFont("fonts/Brigends Expanded.otf", 14f);
 
         // Panel for the title label, centered
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10)); // Add horizontal and vertical gaps
-        titlePanel.setBackground(Color.decode("#009FBD"));
-        JLabel titleLabel = new JLabel("Untitled", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titleLabel.setForeground(Color.decode("#021526")); // Text color
-        //titleLabel.setBorder(new EmptyBorder(2, 120, 0, 0));
+        titlePanel.setBackground(TITLE_BACKGROUND_COLOR);
+        JLabel titleLabel = new JLabel("Amazon", SwingConstants.CENTER);
+        titleLabel.setFont(titleFont);
+        titleLabel.setForeground(TITLE_TEXT_COLOR); // Text color
         titlePanel.add(titleLabel);
 
         // Panel to combine titlePanel (no buttonPanel now)
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Color.decode("#021526")); // Background color for the top panel
+        topPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for the top panel
         topPanel.add(titlePanel, BorderLayout.CENTER);
 
         // Add topPanel to the top of the main panel
@@ -43,7 +55,7 @@ public class HomePage extends JPanel {
 
         // Categories panel using GridBagLayout
         JPanel categoriesPanel = new JPanel(new GridBagLayout());
-        categoriesPanel.setBackground(Color.decode("#021526")); // Background color for the categories panel
+        categoriesPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for the categories panel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -51,7 +63,7 @@ public class HomePage extends JPanel {
         gbc.weighty = 1;
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.BOTH;
-        
+
         // Create buttons and labels for each category
         addCategoryItem(categoriesPanel, gbc, "Electronics", "images/gadgets.png", 0, 0);
         addCategoryItem(categoriesPanel, gbc, "Stationery", "images/stationery.png", 1, 0);
@@ -64,12 +76,12 @@ public class HomePage extends JPanel {
     private void addCategoryItem(JPanel panel, GridBagConstraints gbc, String category, String imagePath, int gridX, int gridY) {
         gbc.gridx = gridX * 2;  // Button at even columns
         gbc.gridy = gridY * 2;
-        
+
         // Create a panel for the category item with a border
         JPanel itemPanel = new JPanel(new BorderLayout());
-        itemPanel.setBackground(Color.decode("#021526")); // Background color for the item panel
-        itemPanel.setBorder(new LineBorder(GRID_LINE_COLOR, 1)); // Set the border for grid lines
-        
+        itemPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for the item panel
+        itemPanel.setBorder(new LineBorder(GRID_LINE_COLOR, 0)); // Set the border for grid lines
+
         JButton button = createCategoryButton(category, imagePath);
         itemPanel.add(button, BorderLayout.CENTER);
 
@@ -79,22 +91,35 @@ public class HomePage extends JPanel {
 
         gbc.gridx = gridX * 2;  // Label at even columns
         gbc.gridy = gridY * 2 + 1;
-        JLabel label = new JLabel(category, SwingConstants.CENTER);
-        label.setForeground(Color.decode("#F9E2AF")); // Text color
-
-        panel.add(label, gbc);
     }
 
     private JButton createCategoryButton(String category, String imagePath) {
         ImageIcon icon = createResizedImageIcon(imagePath, 150, 150); // Resize the image to fit the button
         JButton button = new JButton(); // Create an empty button
 
-        // Set up a panel to hold the category image
+        // Create a panel to hold the category image and text
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setOpaque(false); // Make the panel transparent
+
+        // Create a panel for the image
         JPanel iconPanel = new JPanel(new BorderLayout());
         iconPanel.setOpaque(false); // Make the panel transparent
         JLabel iconLabel = new JLabel(icon);
         iconPanel.add(iconLabel, BorderLayout.CENTER);
-        button.add(iconPanel);
+
+        // Create a panel for the text
+        JPanel textPanel = new JPanel(new BorderLayout());
+        textPanel.setOpaque(false); // Make the panel transparent
+        JLabel textLabel = new JLabel(category, SwingConstants.CENTER);
+        textLabel.setForeground(CATEGORY_TEXT_COLOR); // Text color
+        textLabel.setFont(categoryFont);
+        textPanel.add(textLabel, BorderLayout.CENTER);
+
+        // Combine the image and text panels
+        contentPanel.add(iconPanel, BorderLayout.CENTER);
+        contentPanel.add(textPanel, BorderLayout.SOUTH);
+
+        button.add(contentPanel);
 
         // Customize button appearance
         button.setPreferredSize(new Dimension(150, 150)); // Set the preferred size
@@ -102,6 +127,20 @@ public class HomePage extends JPanel {
         button.setBorderPainted(false); // Remove border
         button.setFocusPainted(false); // Remove focus border
         button.setOpaque(false); // Make button opaque (remove button color)
+
+        // Add mouse listener to handle mouse hover
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBorderPainted(true); // Show border when mouse enters
+                button.setBorder(BorderFactory.createLineBorder(GRID_LINE_COLOR, 5)); // Set border color and thickness
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBorderPainted(false); // Hide border when mouse exits
+            }
+        });
 
         // Add action listener to handle button clicks
         button.addActionListener(e -> {
@@ -127,6 +166,21 @@ public class HomePage extends JPanel {
         });
 
         return button;
+    }
+    
+    private Font loadCustomFont(String fontPath, float size) {
+        try {
+            InputStream is = getClass().getResourceAsStream("/" + fontPath);
+            if (is == null) {
+                System.err.println("Font file not found: " + fontPath);
+                return null;
+            }
+            Font font = Font.createFont(Font.TRUETYPE_FONT, is);
+            return font.deriveFont(size); // Derive the font with the specified size
+        } catch (FontFormatException | IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private ImageIcon createResizedImageIcon(String path, int width, int height) {

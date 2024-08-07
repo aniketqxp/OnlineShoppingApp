@@ -19,11 +19,11 @@ public class SportsPage extends JPanel {
     private Map<String, CartItem> cartItems;
     
     // Define theme colors
-    private static final Color PRIMARY_BACKGROUND_COLOR = Color.decode("#021526");
-    private static final Color SECONDARY_BACKGROUND_COLOR = Color.decode("#009FBD");
-    private static final Color TITLE_TEXT_COLOR = Color.decode("#F6F5F5");
-    private static final Color OTHER_TEXT_COLOR = Color.decode("#F9E2AF");
-    private static final Color GRID_LINE_COLOR = Color.decode("#4B4B4B");
+    private static final Color PRIMARY_BACKGROUND_COLOR = Color.decode("#FFFDED");
+    private static final Color SECONDARY_BACKGROUND_COLOR = Color.decode("#201335");
+    private static final Color TITLE_TEXT_COLOR = Color.decode("#FCE762");
+    private static final Color OTHER_TEXT_COLOR = Color.decode("#4F4789");
+    private static final Color GRID_LINE_COLOR = Color.decode("#1F2833");
 
     public SportsPage(JFrame frame, String category, Map<String, CartItem> cartItems) {
         this.frame = frame;

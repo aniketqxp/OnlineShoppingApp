@@ -17,13 +17,14 @@ public class ElectronicsPage extends JPanel {
     private JFrame frame;
     private String category;
     private Map<String, CartItem> cartItems;
+    private Font categoryFont;
 
     // Define theme colors
-    private static final Color PRIMARY_BACKGROUND_COLOR = Color.decode("#021526");
-    private static final Color SECONDARY_BACKGROUND_COLOR = Color.decode("#009FBD");
-    private static final Color TITLE_TEXT_COLOR = Color.decode("#F6F5F5");
-    private static final Color OTHER_TEXT_COLOR = Color.decode("#F9E2AF");
-    private static final Color GRID_LINE_COLOR = Color.decode("#4B4B4B");
+    private static final Color PRIMARY_BACKGROUND_COLOR = Color.decode("#FFFDED");
+    private static final Color SECONDARY_BACKGROUND_COLOR = Color.decode("#201335");
+    private static final Color TITLE_TEXT_COLOR = Color.decode("#FCE762");
+    private static final Color OTHER_TEXT_COLOR = Color.decode("#4F4789");
+    private static final Color GRID_LINE_COLOR = Color.decode("#1F2833");
 
     public ElectronicsPage(JFrame frame, String category, Map<String, CartItem> cartItems) {
         this.frame = frame;
@@ -42,7 +43,7 @@ public class ElectronicsPage extends JPanel {
         itemsPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for items panel
 
         // Define the items and their images
-        String[] electronicsItems = {"Phone", "Tablet", "Laptop", "Camera", "TV", "Gaming Console"};
+        String[] electronicsItems = {"Phone", "Tablet", "Laptop", "Camera", "TV", "Console"};
         int[] electronicsPrices = {300, 200, 1000, 500, 800, 400}; // Sample prices for the items
         String[] imagePaths = {"images/phone.png", "images/tablet.png", "images/laptop.png", 
                                 "images/camera.png", "images/tv.png", "images/game.png"};
