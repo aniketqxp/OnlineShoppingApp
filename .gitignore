@@ -1,1 +1,38 @@
-/bin/
+# === Java ===
+*.class
+out/
+bin/
+*.jar
+!lib/*.jar
+
+# IDEs
+.project
+.classpath
+.settings/
+.idea/
+*.iml
+*.iws
+.vscode/
+.factorypath
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
+.pytest_cache/
+.ipynb_checkpoints/
+
+# === Infrastructure & Logs ===
+dump.rdb
+*.log
+.shopwave_session
+
+# === System ===
+.DS_Store
+Thumbs.db
+desktop.ini
