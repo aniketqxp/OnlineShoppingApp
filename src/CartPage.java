@@ -1,294 +1,315 @@
-import javax.swing.*;
-import java.awt.*;
-import javax.swing.border.LineBorder;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.Map;
-import javax.imageio.ImageIO;
+import java.util.function.Supplier;
 
 public class CartPage extends JPanel {
 
-    private JFrame frame;
-    private Map<String, CartItem> cartItems;
-    private JPanel previousPage;
+    private final JFrame frame;
+    private final Supplier<JPanel> backDest;
+    private final AppState state = AppState.get();
 
-    // Color constants
-    private static final Color PRIMARY_BACKGROUND_COLOR = Color.decode("#FFFDED");
-    private static final Color TITLE_TEXT_COLOR = Color.decode("#4F4789");
-    private static final Color GRID_LINE_COLOR = Color.decode("#1F2833");
-    private static final Color BUTTON_BACKGROUND_COLOR = Color.decode("#201335");
-    private static final Color BUTTON_TEXT_COLOR = Color.decode("#FFFDED");
-    private static final Color HOVER_BORDER_COLOR = Color.decode("#FFAC33");
+    private JPanel itemsPanel;
+    private JLabel subtotalLbl;
+    private JLabel taxLbl;
+    private JLabel totalLbl;
 
-    // Map to hold image paths for items
-    private static final Map<String, String> itemImagePaths = new HashMap<>();
-
-    static {
-        itemImagePaths.put("Phone", "images/phone.png");
-        itemImagePaths.put("Tablet", "images/tablet.png");
-        itemImagePaths.put("Laptop", "images/laptop.png");
-        itemImagePaths.put("Camera", "images/camera.png");
-        itemImagePaths.put("TV", "images/tv.png");
-        itemImagePaths.put("Console", "images/game.png");
-
-        itemImagePaths.put("Notebook", "images/notebook.png");
-        itemImagePaths.put("Pen", "images/pen.png");
-        itemImagePaths.put("Pencil", "images/pencil.png");
-        itemImagePaths.put("Eraser", "images/eraser.png");
-        itemImagePaths.put("Marker", "images/marker.png");
-        itemImagePaths.put("Sharpener", "images/sharpener.png");
-
-        itemImagePaths.put("Hat", "images/hat.png");
-        itemImagePaths.put("Sunglasses", "images/sunglasses.png");
-        itemImagePaths.put("Watch", "images/watch.png");
-        itemImagePaths.put("Gloves", "images/gloves.png");
-        itemImagePaths.put("Backpack", "images/backpack.png");
-        itemImagePaths.put("Scarf", "images/scarf.png");
-
-        itemImagePaths.put("Football", "images/football.png");
-        itemImagePaths.put("Basketball", "images/basketball.png");
-        itemImagePaths.put("Baseball", "images/ball.png");
-        itemImagePaths.put("Cricket Bat", "images/cricket-bat.png");
-        itemImagePaths.put("Tennis Racket", "images/tennis-racket.png");
-        itemImagePaths.put("Badminton Racket", "images/badminton.png");
-    }
-
-    public CartPage(JFrame frame, Map<String, CartItem> cartItems, JPanel previousPage) {
+    public CartPage(JFrame frame, Supplier<JPanel> backDest) {
         this.frame = frame;
-        this.cartItems = cartItems;
-        this.previousPage = previousPage;
+        this.backDest = backDest;
         setLayout(new BorderLayout());
+        setBackground(Theme.BG);
 
-        // Set the primary background color
-        setBackground(PRIMARY_BACKGROUND_COLOR);
+        add(buildHeader(), BorderLayout.NORTH);
+        add(buildCenter(), BorderLayout.CENTER);
+        add(buildSummary(), BorderLayout.SOUTH);
 
-        // Title label
-        JLabel cartLabel = new JLabel("Cart", SwingConstants.CENTER);
-        cartLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        cartLabel.setForeground(TITLE_TEXT_COLOR);
-        add(cartLabel, BorderLayout.NORTH);
-
-        // Display cart items
-        JPanel itemsPanel = new JPanel();
-        itemsPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for items panel
-        itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS));
-        updateCartDisplay(itemsPanel);
-
-        JScrollPane scrollPane = new JScrollPane(itemsPanel);
-        add(scrollPane, BorderLayout.CENTER);
-
-        // Bottom panel for clear cart and checkout buttons
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottomPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for bottom panel
-
-        // Clear Cart Button
-        JButton clearCartButton = new JButton("Clear Cart");
-        clearCartButton.setBackground(BUTTON_BACKGROUND_COLOR); // Button background color
-        clearCartButton.setForeground(BUTTON_TEXT_COLOR); // Button text color
-        clearCartButton.addActionListener(e -> {
-            cartItems.clear();
-            updateCartDisplay(itemsPanel);
-        });
-        bottomPanel.add(clearCartButton);
-
-        // Checkout Button
-        JButton proceedButton = new JButton("Checkout");
-        proceedButton.setBackground(BUTTON_BACKGROUND_COLOR); // Button background color
-        proceedButton.setForeground(BUTTON_TEXT_COLOR); // Button text color
-        proceedButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(frame, "Proceed to payment.");
-        });
-        bottomPanel.add(proceedButton);
-
-        add(bottomPanel, BorderLayout.SOUTH);
-
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(BUTTON_BACKGROUND_COLOR); // Background color for top panel
-
-        JButton backButton = createBackButton(previousPage);
-        topPanel.add(backButton, BorderLayout.WEST);
-
-        add(topPanel, BorderLayout.NORTH);
+        refreshItems();
     }
 
-    private void updateCartDisplay(JPanel itemsPanel) {
-        itemsPanel.removeAll();
+    private JPanel buildHeader() {
+        JPanel header = new JPanel(new BorderLayout(10, 0));
+        header.setBackground(Theme.HEADER);
+        header.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
+        header.setPreferredSize(new Dimension(0, 58));
 
-        if (cartItems.isEmpty()) {
-            // Create a panel for empty cart content
-            JPanel emptyPanel = new JPanel(new GridBagLayout());
-            emptyPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for the empty panel
+        JButton back = UIUtils.navIconButton("images/back.png", 24);
+        back.addActionListener(e -> UIUtils.navigate(frame, backDest.get()));
+        header.add(back, BorderLayout.WEST);
 
-            // Create a sub-panel to hold the image and text
-            JPanel contentPanel = new JPanel();
-            contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-            contentPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Match the background color
+        JLabel title = new JLabel("Your Cart", SwingConstants.CENTER);
+        title.setFont(Theme.bold(18f));
+        title.setForeground(Theme.TEXT_ON_DARK);
+        header.add(title, BorderLayout.CENTER);
 
-            // Add the image
-            ImageIcon binIcon = createResizedImageIcon("images/empty.png", 100, 100); // Adjust size as needed
-            JLabel binLabel = new JLabel(binIcon);
-            binLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            contentPanel.add(binLabel);
+        return header;
+    }
 
-            // Add some vertical space
-            contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+    private JScrollPane buildCenter() {
+        itemsPanel = new JPanel();
+        itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS));
+        itemsPanel.setBackground(Theme.BG);
+        itemsPanel.setBorder(BorderFactory.createEmptyBorder(12, 16, 0, 16));
 
-            // Add the text
-            JLabel emptyCartLabel = new JLabel("Your cart is empty.");
-            emptyCartLabel.setForeground(TITLE_TEXT_COLOR); // Text color
-            emptyCartLabel.setFont(new Font("Arial", Font.BOLD, 16));
-            emptyCartLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            contentPanel.add(emptyCartLabel);
+        JScrollPane sc = new JScrollPane(itemsPanel);
+        sc.setBorder(null);
+        sc.getVerticalScrollBar().setUnitIncrement(20);
+        sc.getViewport().setBackground(Theme.BG);
+        return sc;
+    }
 
-            // Add the content panel to the empty panel
-            emptyPanel.add(contentPanel);
+    private JPanel buildSummary() {
+        JPanel south = new JPanel(new BorderLayout(0, 0));
+        south.setBackground(Theme.SURFACE);
+        south.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, Theme.BORDER),
+                BorderFactory.createEmptyBorder(14, 20, 14, 20)));
 
-            // Add the empty panel to the items panel
-            itemsPanel.add(emptyPanel, BorderLayout.CENTER);
-        } else {
-            for (CartItem cartItem : cartItems.values()) {
-                JPanel itemPanel = new JPanel(new GridBagLayout());
-                itemPanel.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for item panel
-                itemPanel.setBorder(new LineBorder(GRID_LINE_COLOR, 1)); // Border for grid lines
-                GridBagConstraints gbc = new GridBagConstraints();
+        JPanel prices = new JPanel(new GridBagLayout());
+        prices.setBackground(Theme.SURFACE);
 
-                // Box A: Image
-                JLabel itemImageLabel = new JLabel();
-                String imagePath = itemImagePaths.getOrDefault(cartItem.getItemName(), "images/default.png");
-                ImageIcon itemImage = createResizedImageIcon(imagePath, 75, 75);
-                itemImageLabel.setIcon(itemImage);
-                itemImageLabel.setPreferredSize(new Dimension(100, 100));
-                gbc.gridx = 0;
-                gbc.gridy = 0;
-                gbc.gridheight = 2; // Span 2 rows
-                gbc.insets = new Insets(5, 5, 5, 5);
-                gbc.anchor = GridBagConstraints.WEST;
-                itemPanel.add(itemImageLabel, gbc);
+        subtotalLbl = summaryRow(prices, "Subtotal", 0, false);
+        taxLbl = summaryRow(prices, "Tax (10%)", 1, false);
 
-                // Box B: Details
-                JPanel boxB = new JPanel();
-                boxB.setBackground(PRIMARY_BACKGROUND_COLOR); // Background color for details box
-                boxB.setLayout(new BoxLayout(boxB, BoxLayout.Y_AXIS)); // Stack details vertically
+        GridBagConstraints div = new GridBagConstraints();
+        div.gridx = 0;
+        div.gridy = 2;
+        div.gridwidth = 2;
+        div.fill = GridBagConstraints.HORIZONTAL;
+        div.insets = new Insets(6, 0, 6, 0);
+        JPanel line = new JPanel();
+        line.setBackground(Theme.BORDER);
+        line.setPreferredSize(new Dimension(0, 1));
+        prices.add(line, div);
 
-                JLabel itemNameLabel = new JLabel("<html><div style='width:100px;'>" + cartItem.getItemName() + "</div></html>");
-                itemNameLabel.setFont(new Font("Arial", Font.BOLD, 16));
-                itemNameLabel.setForeground(TITLE_TEXT_COLOR); // Text color
-                JLabel itemPriceLabel = new JLabel("Price: $" + cartItem.getPrice());
-                itemPriceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-                itemPriceLabel.setForeground(TITLE_TEXT_COLOR); // Text color
-                JLabel itemQtyLabel = new JLabel("Qty.: " + cartItem.getQuantity());
-                itemQtyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-                itemQtyLabel.setForeground(TITLE_TEXT_COLOR); // Text color
-                boxB.add(itemNameLabel);
-                boxB.add(itemPriceLabel);
-                boxB.add(itemQtyLabel);
-                gbc.gridx = 1;
-                gbc.gridy = 0;
-                gbc.gridheight = 1;
-                gbc.anchor = GridBagConstraints.CENTER;
-                itemPanel.add(boxB, gbc);
+        totalLbl = summaryRow(prices, "Order Total", 3, true);
 
-                // Box C: Total Price
-                JLabel itemTotalPriceLabel = new JLabel("$" + (cartItem.getPrice() * cartItem.getQuantity()));
-                itemTotalPriceLabel.setFont(new Font("Arial", Font.BOLD, 24));
-                itemTotalPriceLabel.setForeground(TITLE_TEXT_COLOR); // Text color
-                itemTotalPriceLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-                gbc.gridx = 2;
-                gbc.gridy = 0;
-                gbc.gridheight = 2; // Span 2 rows
-                gbc.insets = new Insets(5, 5, 5, 5);
-                gbc.anchor = GridBagConstraints.EAST;
-                itemPanel.add(itemTotalPriceLabel, gbc);
+        south.add(prices, BorderLayout.WEST);
 
-                itemsPanel.add(itemPanel);
+        JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        btns.setBackground(Theme.SURFACE);
+
+        JButton clearBtn = UIUtils.ghostButton("Clear Cart");
+        clearBtn.addActionListener(e -> {
+            state.clearCart();
+            refreshItems();
+        });
+
+        RoundedButton checkoutBtn = UIUtils.darkButton("Checkout ->");
+        checkoutBtn.addActionListener(e -> {
+            if (state.getCart().isEmpty()) {
+                ToastNotification.showError(frame, "Your cart is empty");
+                return;
             }
+            UIUtils.navigate(frame, new CheckoutPage(frame, backDest));
+        });
 
-            // Display total price
-            double totalPrice = cartItems.values().stream().mapToDouble(item -> item.getPrice() * item.getQuantity()).sum();
-            JLabel totalPriceLabel = new JLabel("Total: $" + totalPrice);
-            totalPriceLabel.setFont(new Font("Arial", Font.BOLD, 28));
-            totalPriceLabel.setForeground(TITLE_TEXT_COLOR); // Text color
-            totalPriceLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        btns.add(clearBtn);
+        btns.add(checkoutBtn);
+        south.add(btns, BorderLayout.EAST);
 
-            // Add total price label with GridBagConstraints
-            JPanel totalPanel = new JPanel(new GridBagLayout());
-            totalPanel.setBackground(PRIMARY_BACKGROUND_COLOR);
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.insets = new Insets(10, 0, 10, 0);
-            gbc.anchor = GridBagConstraints.CENTER;
+        return south;
+    }
 
-            totalPanel.add(totalPriceLabel, gbc);
-            itemsPanel.add(totalPanel);
+    private JLabel summaryRow(JPanel parent, String label, int row, boolean large) {
+        GridBagConstraints g = new GridBagConstraints();
+        g.gridy = row;
+        g.insets = new Insets(3, 0, 3, 32);
+
+        g.gridx = 0;
+        g.anchor = GridBagConstraints.WEST;
+        JLabel key = new JLabel(label);
+        key.setFont(large ? Theme.bold(16f) : Theme.body(14f));
+        key.setForeground(Theme.TEXT_2);
+        parent.add(key, g);
+
+        g.gridx = 1;
+        g.anchor = GridBagConstraints.EAST;
+        JLabel val = new JLabel("$0.00");
+        val.setFont(large ? Theme.bold(18f) : Theme.bold(14f));
+        val.setForeground(Theme.TEXT);
+        parent.add(val, g);
+
+        return val;
+    }
+
+    private void refreshItems() {
+        itemsPanel.removeAll();
+        Map<String, CartItem> cart = state.getCart();
+
+        if (cart.isEmpty()) {
+            itemsPanel.add(buildEmptyState());
+        } else {
+            for (CartItem item : cart.values()) {
+                itemsPanel.add(buildRow(item));
+                itemsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            }
         }
 
         itemsPanel.revalidate();
         itemsPanel.repaint();
+        updateSummary();
     }
 
-    private ImageIcon createResizedImageIcon(String path, int width, int height) {
-        try {
-            URL imageUrl = getClass().getResource(path);
-            if (imageUrl == null) {
-                throw new IOException("Image not found: " + path);
-            }
-            BufferedImage originalImage = ImageIO.read(imageUrl);
-            Image resizedImage = originalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-            return new ImageIcon(resizedImage);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+    private void updateSummary() {
+        double sub = state.getCartTotal();
+        double tax = sub * 0.10;
+        subtotalLbl.setText(String.format("$%.2f", sub));
+        taxLbl.setText(String.format("$%.2f", tax));
+        totalLbl.setText(String.format("$%.2f", sub + tax));
     }
 
-    private JButton createBackButton(JPanel p) {
-        // Create a panel to hold the back image
-        JPanel backPanel = new JPanel();
-        backPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5)); // Center align image
-        backPanel.setOpaque(false); // Make the panel transparent
+    private JPanel buildEmptyState() {
+        JPanel p = new JPanel(new GridBagLayout());
+        p.setBackground(Theme.SURFACE);
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 320));
+        p.setBorder(BorderFactory.createLineBorder(Theme.BORDER, 1));
+        p.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Load and add the back image
-        ImageIcon backIcon = createResizedImageIcon("images/back.png", 30, 30); // Adjust size as needed
-        JLabel backImageLabel = new JLabel(backIcon);
-        backPanel.add(backImageLabel);
+        JPanel inner = new JPanel();
+        inner.setLayout(new BoxLayout(inner, BoxLayout.Y_AXIS));
+        inner.setBackground(Theme.SURFACE);
 
-        // Create a button with an empty icon
-        JButton backButton = new JButton();
-        backButton.setIcon(new ImageIcon(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB))); // Create a transparent icon
-        backButton.setContentAreaFilled(false); // Remove default background
-        backButton.setBorderPainted(false); // Remove border
-        backButton.setFocusPainted(false); // Remove focus border
-        backButton.setOpaque(false); // Make button opaque (remove button color)
-        backButton.setPreferredSize(new Dimension(100, 45)); // Set preferred size to avoid jiggling
+        JLabel icon = new JLabel(ImageCache.get().icon("images/empty.png", 80, 80));
+        icon.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Add the panel to the button
-        backPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 37));
-        backButton.setLayout(new BorderLayout()); // Use BorderLayout to ensure proper display
-        backButton.add(backPanel, BorderLayout.CENTER);
+        JLabel msg = new JLabel("Your cart is empty");
+        msg.setFont(Theme.bold(18f));
+        msg.setForeground(Theme.TEXT);
+        msg.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Add action listener to the button
-        backButton.addActionListener(e -> {
-        	frame.setContentPane(p);
-            frame.revalidate();
-            frame.repaint();
+        JLabel sub = new JLabel("Browse categories and add items to get started");
+        sub.setFont(Theme.body(13f));
+        sub.setForeground(Theme.TEXT_2);
+        sub.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        inner.add(Box.createRigidArea(new Dimension(0, 20)));
+        inner.add(icon);
+        inner.add(Box.createRigidArea(new Dimension(0, 14)));
+        inner.add(msg);
+        inner.add(Box.createRigidArea(new Dimension(0, 6)));
+        inner.add(sub);
+        inner.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        p.add(inner);
+        return p;
+    }
+
+    private JPanel buildRow(CartItem item) {
+        JPanel row = new JPanel(new GridBagLayout());
+        row.setBackground(Theme.SURFACE);
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Theme.BORDER, 1),
+                BorderFactory.createEmptyBorder(12, 16, 12, 16)));
+
+        GridBagConstraints g = new GridBagConstraints();
+        g.anchor = GridBagConstraints.WEST;
+        g.insets = new Insets(0, 8, 0, 8);
+
+        g.gridx = 0;
+        g.gridy = 0;
+        g.gridheight = 2;
+        row.add(new JLabel(ImageCache.get().icon(item.getProduct().imagePath, 68, 68)), g);
+        g.gridheight = 1;
+
+        g.gridx = 1;
+        g.gridy = 0;
+        g.weightx = 1.0;
+        g.fill = GridBagConstraints.HORIZONTAL;
+        JLabel name = new JLabel(item.getItemName());
+        name.setFont(Theme.bold(15f));
+        name.setForeground(Theme.TEXT);
+        row.add(name, g);
+
+        g.gridy = 1;
+        g.fill = GridBagConstraints.NONE;
+        JLabel unit = new JLabel(item.getProduct().formattedPrice() + " each");
+        unit.setFont(Theme.body(12f));
+        unit.setForeground(Theme.TEXT_2);
+        row.add(unit, g);
+
+        g.gridx = 2;
+        g.gridy = 0;
+        g.gridheight = 2;
+        g.weightx = 0;
+        g.anchor = GridBagConstraints.CENTER;
+        JTextField qtyF = new JTextField(String.valueOf(item.getQuantity()), 2);
+        qtyF.setHorizontalAlignment(JTextField.CENTER);
+        qtyF.setFont(Theme.bold(14f));
+        qtyF.setForeground(Theme.TEXT);
+        qtyF.setBackground(Theme.SURFACE);
+        qtyF.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Theme.BORDER_2, 1),
+                BorderFactory.createEmptyBorder(4, 6, 4, 6)));
+        qtyF.setPreferredSize(new Dimension(46, 30));
+
+        JButton minus = UIUtils.qtyButton(false);
+        JButton plus = UIUtils.qtyButton(true);
+
+        minus.addActionListener(e -> {
+            int qty = UIUtils.parseQty(qtyF) - 1;
+            if (qty <= 0) state.removeFromCart(item.getItemName());
+            else {
+                state.setCartQty(item.getItemName(), qty);
+                qtyF.setText(String.valueOf(qty));
+            }
+            refreshItems();
+        });
+        plus.addActionListener(e -> {
+            int qty = UIUtils.parseQty(qtyF) + 1;
+            state.setCartQty(item.getItemName(), qty);
+            qtyF.setText(String.valueOf(qty));
+            refreshItems();
         });
 
-        // Add mouse listeners to handle hover effects
-        backButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                backButton.setBorder(BorderFactory.createLineBorder(Color.decode("#FFAC33"), 2)); // 2-pixel border on hover
-            }
+        JPanel stepper = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
+        stepper.setOpaque(false);
+        stepper.add(minus);
+        stepper.add(qtyF);
+        stepper.add(plus);
+        row.add(stepper, g);
 
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent e) {
-                backButton.setBorder(BorderFactory.createEmptyBorder()); // Remove border when not hovering
-            }
+        g.gridx = 3;
+        g.anchor = GridBagConstraints.EAST;
+        JLabel total = new JLabel(String.format("$%.2f", item.getTotal()));
+        total.setFont(Theme.bold(16f));
+        total.setForeground(Theme.TEXT);
+        row.add(total, g);
+
+        g.gridx = 4;
+        JButton remove = new JButton("X");
+        remove.setFont(Theme.bold(13f));
+        remove.setForeground(Color.decode("#94A3B8"));
+        UIUtils.makeTransparent(remove);
+        remove.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        remove.addActionListener(e -> {
+            state.removeFromCart(item.getItemName());
+            refreshItems();
         });
+        remove.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseEntered(java.awt.event.MouseEvent e) { remove.setForeground(Theme.DANGER); }
+            @Override public void mouseExited(java.awt.event.MouseEvent e) { remove.setForeground(Color.decode("#94A3B8")); }
+        });
+        row.add(remove, g);
 
-        return backButton;
+        return row;
     }
 }
